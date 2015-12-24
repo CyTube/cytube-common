@@ -1,4 +1,5 @@
 import JSONStream from 'JSONStream';
+import * as Protocol from './protocol';
 import { EventEmitter } from 'events';
 
 const SOCKET_EVENTS = [
@@ -15,6 +16,7 @@ export default class Connection extends EventEmitter {
     constructor(socket) {
         super();
         this.socket = socket;
+        this.protocol = Protocol;
         this.init();
     }
 
