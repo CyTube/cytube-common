@@ -33,4 +33,8 @@ export default class Connection extends EventEmitter {
     write(data) {
         this.socket.write(JSON.stringify(data));
     }
+
+    get remoteAddressAndPort() {
+        return this.socket.remoteAddress + '/' + this.socket.remotePort;
+    }
 }

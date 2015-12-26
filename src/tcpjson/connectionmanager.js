@@ -16,8 +16,8 @@ export default class ConnectionManager {
     }
 
     newConnection(address) {
-        const [host, port] = address.split(':');
-        logger.info(`Opening connection to [${host}:${port}]`);
+        const [host, port] = address.split('/');
+        logger.info(`Opening connection to [${host}/${port}]`);
         const socket = net.connect(port, host);
         const connection = new Connection(socket);
         connection.address = address;

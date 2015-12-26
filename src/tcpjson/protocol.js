@@ -1,6 +1,6 @@
 export function socketConnect(socketID, socketIP) {
     return {
-        action: 'socketConnect',
+        $type: 'socketConnect',
         socketID: socketID,
         socketData: {
             ip: socketIP
@@ -10,7 +10,7 @@ export function socketConnect(socketID, socketIP) {
 
 export function socketFrame(socketID, event, args) {
     return {
-        action: 'socketFrame',
+        $type: 'socketFrame',
         socketID: socketID,
         event: event,
         args: args
@@ -19,14 +19,14 @@ export function socketFrame(socketID, event, args) {
 
 export function socketDisconnect(socketID) {
     return {
-        action: 'socketDisconnect',
+        $type: 'socketDisconnect',
         socketID: socketID
     };
 }
 
 export function socketJoinSocketChannels(socketID, channels) {
     return {
-        action: 'socketJoinSocketChannel',
+        $type: 'socketJoinSocketChannel',
         socketID: socketID,
         channels: channels
     };
@@ -34,7 +34,7 @@ export function socketJoinSocketChannels(socketID, channels) {
 
 export function socketKick(socketID, reason) {
     return {
-        action: 'socketKick',
+        $type: 'socketKick',
         socketID: socketID,
         reason: reason
     };
