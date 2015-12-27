@@ -15,6 +15,8 @@ export default class Server extends EventEmitter {
     }
 
     onConnection(socket) {
-        this.emit('connection', new Connection(socket));
+        const endpoint = socket.remoteAddress + '/' + socket.remotePort;
+        const connection = new Connection(socket, endpoint);
+        this.emit('connection', connection);
     }
 }

@@ -13,9 +13,10 @@ const SOCKET_EVENTS = [
 ]
 
 export default class Connection extends EventEmitter {
-    constructor(socket) {
+    constructor(socket, endpoint) {
         super();
         this.socket = socket;
+        this.endpoint = endpoint;
         this.protocol = Protocol;
         this.init();
     }
@@ -34,7 +35,11 @@ export default class Connection extends EventEmitter {
         this.socket.write(JSON.stringify(data));
     }
 
-    get remoteAddressAndPort() {
-        return this.socket.remoteAddress + '/' + this.socket.remotePort;
+    end(data) {
+        this.socket.end(data);
+    }
+
+    destroy() {
+        this.socket.destroy();
     }
 }
