@@ -1,5 +1,6 @@
 import JSONStream from 'JSONStream';
-import * as Protocol from './protocol';
+import JSONProtocol from './protocol';
+import logger from '../logger';
 import { EventEmitter } from 'events';
 
 const SOCKET_EVENTS = [
@@ -17,13 +18,14 @@ export default class Connection extends EventEmitter {
         super();
         this.socket = socket;
         this.endpoint = endpoint;
-        this.protocol = Protocol;
+        this.protocol = new JSONProtocol();
         this.init();
     }
 
     init() {
         this.readStream = JSONStream.parse();
         this.readStream.on('data', this.emit.bind(this, 'data'));
+        this.on('data', this.onData.bind(this));
         this.socket.pipe(this.readStream);
 
         SOCKET_EVENTS.forEach(event => {
@@ -31,15 +33,24 @@ export default class Connection extends EventEmitter {
         });
     }
 
+    onData(data) {
+        try {
+            const [event, args] = this.protocol.deserializeEvent(data);
+            this.emit.call(this, [event].concat(args));
+        } catch (error) {
+            logger.error(`Failed to deserialize event: ${error}`);
+        }
+    }
+
     write(data) {
-        this.socket.write(JSON.stringify(data));
+        return this.socket.write(JSON.stringify(data));
     }
 
     end(data) {
-        this.socket.end(data);
+        return this.socket.end(data);
     }
 
     destroy() {
-        this.socket.destroy();
+        return this.socket.destroy();
     }
 }
