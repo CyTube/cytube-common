@@ -33,7 +33,7 @@ function register(Protocol, eventName, propNames) {
     Protocol.prototype['_propNames' + eventName] = propNames;
 }
 
-register(JSONProtocol, 'SocketConnectEvent', ['socketID', 'socketIP']);
+register(JSONProtocol, 'SocketConnectEvent', ['socketID', 'socketIP', 'socketUser']);
 register(JSONProtocol, 'SocketFrameEvent', ['socketID', 'event', 'args']);
 register(JSONProtocol, 'SocketDisconnectEvent', ['socketID']);
 register(JSONProtocol, 'SocketJoinRoomsEvent', ['socketID', 'roomList']);
