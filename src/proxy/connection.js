@@ -36,7 +36,9 @@ export default class Connection extends EventEmitter {
     onData(data) {
         try {
             const [event, args] = this.protocol.deserializeEvent(data);
-            this.emit.call(this, [event].concat(args));
+            process.nextTick(() => {
+                this.emit.apply(this, [event].concat(args));
+            });
         } catch (error) {
             logger.error(`Failed to deserialize event: ${error}`);
         }
