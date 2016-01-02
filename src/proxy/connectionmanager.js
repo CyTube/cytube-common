@@ -10,6 +10,11 @@ export default class ConnectionManager extends EventEmitter {
     }
 
     connect(address) {
+        const [host, port] = address.split('/');
+        if (!net.isIP(host) || isNaN(parseInt(port, 10))) {
+            throw new Error(`Invalid address "${address}"`);
+        }
+
         if (this.connections.hasOwnProperty(address)) {
             return this.connections[address];
         }
