@@ -5,11 +5,15 @@ describe('JSONProtocol', function () {
     describe('newSocketConnectEvent', function () {
         it('serializes a SocketConnectEvent', function () {
             var protocol = new JSONProtocol();
-            var event = protocol.newSocketConnectEvent('socket id', 'socket ip');
+            var user = {
+                name: 'john'
+            };
+            var event = protocol.newSocketConnectEvent('socket id', 'socket ip', user);
             var expected = {
                 $type: 'SocketConnectEvent',
                 socketID: 'socket id',
-                socketIP: 'socket ip'
+                socketIP: 'socket ip',
+                socketUser: user
             };
             assert.deepStrictEqual(event, expected);
         });
@@ -18,11 +22,15 @@ describe('JSONProtocol', function () {
     describe('onEvent', function () {
         it('deserializes an event', function () {
             var protocol = new JSONProtocol();
-            var expected = ['SocketConnectEvent', ['socket id', 'socket ip']];
+            var user = {
+                name: 'john'
+            };
+            var expected = ['SocketConnectEvent', ['socket id', 'socket ip', user]];
             var result = protocol.deserializeEvent({
                 $type: 'SocketConnectEvent',
                 socketID: 'socket id',
-                socketIP: 'socket ip'
+                socketIP: 'socket ip',
+                socketUser: user
             });
             assert.deepStrictEqual(result, expected);
         });
