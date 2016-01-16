@@ -1,16 +1,37 @@
 import knex from 'knex'
 import bookshelf from 'bookshelf';
 
+/** @module cytube-common/database/database */
+
+/**
+ * List of model classes to initialize.
+ *
+ * @type Array<string>
+ */
 const MODELS = [
     './models/user'
 ];
 
-export default class Database {
+/**
+ * Represents an interface to the database.  Holds the connection pool and ORM
+ */
+class Database {
+    /**
+     * Create a new Database and initializes it.
+     *
+     * @param {Object} dbConfig Knex configuration object
+     * @see {@link http://knexjs.org/#Installation-client}
+     */
     constructor(dbConfig) {
         this.dbConfig = dbConfig;
         this.init();
     }
 
+    /**
+     * Initialize the database connection and ORM.
+     *
+     * @private
+     */
     init() {
         this.knex = knex(this.dbConfig);
         this.bookshelf = bookshelf(this.knex);
@@ -18,6 +39,11 @@ export default class Database {
         this.initModels();
     }
 
+    /**
+     * Initialize the database models.
+     *
+     * @private
+     */
     initModels() {
         this.models = {};
         this.collections = {};
@@ -33,3 +59,5 @@ export default class Database {
         });
     }
 }
+
+export default Database

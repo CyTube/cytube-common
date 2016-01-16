@@ -3,6 +3,14 @@ import JSONProtocol from './protocol';
 import logger from '../logger';
 import { EventEmitter } from 'events';
 
+/** @module cytube-common/proxy/connection */
+
+/**
+ * List of event names to propagate from the internal {@link net.Socket}.
+ *
+ * @see {@link https://nodejs.org/api/net.html#net_class_net_socket}
+ * @type Array<string>
+ */
 const SOCKET_EVENTS = [
     'close',
     'connect',
@@ -13,7 +21,19 @@ const SOCKET_EVENTS = [
     'timeout'
 ]
 
-export default class Connection extends EventEmitter {
+/**
+ * Wraps a net.Socket to send and receive JSON events.
+ *
+ * @extends EventEmitter
+ */
+class Connection extends EventEmitter {
+    /**
+     * Create a new Connection
+     *
+     * @param {net.Socket} socket Internal socket to read/write
+     * @param {string} endpoint String that uniquely identifies the
+     * remote address of the connection.
+     */
     constructor(socket, endpoint) {
         super();
         this.socket = socket;
@@ -22,6 +42,12 @@ export default class Connection extends EventEmitter {
         this.init();
     }
 
+    /**
+     * Initialize the connection for reading and writing, and bind event
+     * listeners.
+     *
+     * @private
+     */
     init() {
         this.readStream = JSONStream.parse();
         this.readStream.on('data', this.emit.bind(this, 'data'));
@@ -33,6 +59,13 @@ export default class Connection extends EventEmitter {
         });
     }
 
+    /**
+     * Handle incoming data over the internal socket.  Deserialize
+     * the data and emit specific events based on the payload.
+     *
+     * @param {Object} data JSON Object containing data from the remote socket.
+     * @private
+     */
     onData(data) {
         try {
             const [event, args] = this.protocol.deserializeEvent(data);
@@ -44,15 +77,40 @@ export default class Connection extends EventEmitter {
         }
     }
 
+    /**
+     * Write JSON data to the connection.
+     *
+     * @param {Object} data JSON Object to send
+     * @returns {boolean} Result of {@link net.Socket#write}.
+     * @see {@link https://nodejs.org/api/net.html#net_socket_write_data_encoding_callback}
+     * @public
+     */
     write(data) {
         return this.socket.write(JSON.stringify(data));
     }
 
+    /**
+     * Close the connection, optionally sending final data.
+     *
+     * @param {Object} data Optional JSON Object to send
+     * @see {@link https://nodejs.org/api/net.html#net_socket_end_data_encoding}
+     */
     end(data) {
-        return this.socket.end(data);
+        if (data) {
+            return this.socket.end(JSON.stringify(data));
+        } else {
+            return this.socket.end();
+        }
     }
 
+    /**
+     * Destroy the underlying socket.
+     *
+     * @see {@link https://nodejs.org/api/net.html#net_socket_destroy}
+     */
     destroy() {
         return this.socket.destroy();
     }
 }
+
+export default Connection
