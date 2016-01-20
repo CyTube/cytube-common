@@ -1,8 +1,17 @@
 import lo from 'lodash';
+import JSONStream from 'JSONStream';
 
 const SLICE = Array.prototype.slice;
 
-export default class JSONProtocol {
+class JSONProtocol {
+    streamParser() {
+        return JSONStream.parse();
+    }
+
+    serializeEvent(data) {
+        return JSON.stringify(data);
+    }
+
     deserializeEvent(data) {
         if (!this['_propNames' + data.$type]) {
             throw new Error(`Unknown event type ${data.$type}`);
@@ -16,6 +25,8 @@ export default class JSONProtocol {
         return [data.$type, args];
     }
 }
+
+export default JSONProtocol
 
 function register(Protocol, eventName, propNames) {
     Protocol.prototype['new' + eventName] = function createEvent() {

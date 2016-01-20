@@ -13,9 +13,10 @@ class ConnectionManager extends EventEmitter {
     /**
      * Create a new ConnectionManager.
      */
-    constructor() {
+    constructor(protocol) {
         super();
         this.connections = {};
+        this.protocol = protocol;
     }
 
     /**
@@ -67,7 +68,7 @@ class ConnectionManager extends EventEmitter {
         const [host, port] = address.split('/');
         logger.info(`Opening connection to [${host}/${port}]`);
         const socket = net.connect(port, host);
-        const connection = new Connection(socket, address);
+        const connection = new Connection(socket, address, this.protocol);
         connection.on('close', this.onConnectionClose.bind(this, connection));
         connection.on('error', this.onConnectionError.bind(this, connection));
 

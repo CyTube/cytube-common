@@ -1,5 +1,3 @@
-import JSONStream from 'JSONStream';
-import JSONProtocol from './protocol';
 import logger from '../logger';
 import { EventEmitter } from 'events';
 
@@ -32,13 +30,14 @@ class Connection extends EventEmitter {
      *
      * @param {net.Socket} socket Internal socket to read/write
      * @param {string} endpoint String that uniquely identifies the
+     * @param {Object} protocol Serializer/deserializer for events
      * remote address of the connection.
      */
-    constructor(socket, endpoint) {
+    constructor(socket, endpoint, protocol) {
         super();
         this.socket = socket;
         this.endpoint = endpoint;
-        this.protocol = new JSONProtocol();
+        this.protocol = protocol;
         this.init();
     }
 
@@ -49,7 +48,7 @@ class Connection extends EventEmitter {
      * @private
      */
     init() {
-        this.readStream = JSONStream.parse();
+        this.readStream = this.protocol.streamParser();
         this.readStream.on('data', this.emit.bind(this, 'data'));
         this.on('data', this.onData.bind(this));
         this.socket.pipe(this.readStream);
@@ -86,7 +85,7 @@ class Connection extends EventEmitter {
      * @public
      */
     write(data) {
-        return this.socket.write(JSON.stringify(data));
+        return this.socket.write(this.protocol.serializeEvent(data));
     }
 
     /**
@@ -97,7 +96,7 @@ class Connection extends EventEmitter {
      */
     end(data) {
         if (data) {
-            return this.socket.end(JSON.stringify(data));
+            return this.socket.end(this.protocol.serializeEvent(data));
         } else {
             return this.socket.end();
         }
