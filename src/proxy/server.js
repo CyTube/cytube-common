@@ -13,10 +13,12 @@ class Server extends EventEmitter {
      * Create a new Server
      *
      * @param {Object} config server configuration
+     * @param {Object} protocol protocol to use for incoming connections
      */
-    constructor(config) {
+    constructor(config, protocol) {
         super();
         this.config = config;
+        this.protocol = protocol;
         this.init();
     }
 
@@ -38,7 +40,7 @@ class Server extends EventEmitter {
      */
     onConnection(socket) {
         const endpoint = socket.remoteAddress + '/' + socket.remotePort;
-        const connection = new Connection(socket, endpoint);
+        const connection = new Connection(socket, endpoint, this.protocol);
         this.emit('connection', connection);
     }
 }
