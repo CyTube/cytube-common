@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import logger from '../logger';
 import Connection from './connection';
 import net from 'net';
+import { parseAddress } from '../util/addressutil';
 
 /**
  * Holds {@link Connection} objects and vends them to callers.  Ensures
@@ -23,14 +24,13 @@ class ConnectionManager extends EventEmitter {
      * Get a Connection to the specified address.  If one is not already
      * available, open a new connection.
      *
-     * @param {string} address Remote address, using the format
-     * <code>{hostname}/{port}</code>
+     * @param {string} address Remote address
      * @return {Connection} Connection to the specified address
      * @see {@link module:cytube-common/proxy/connection}
      */
     connect(address) {
-        const [host, port] = address.split('/');
-        if (!net.isIP(host) || isNaN(parseInt(port, 10))) {
+        const { hostname, port } = parseAddress(address);
+        if (hostname === null || port === null) {
             throw new Error(`Invalid address "${address}"`);
         }
 
@@ -38,7 +38,7 @@ class ConnectionManager extends EventEmitter {
             return this.connections[address];
         }
 
-        this.connections[address] = this.newConnection(address);
+        this.connections[address] = this.newConnection(address, hostname, port);
         this.emit('connection', this.connections[address]);
         return this.connections[address];
     }
@@ -58,16 +58,16 @@ class ConnectionManager extends EventEmitter {
     /**
      * Open a new {@link Connection} to the specified address.
      *
-     * @param {string} address Remote address of the format
-     * <code>{hostname}/{port}</code>
+     * @param {string} address Remote address
+     * @param {string} hostname pre-parsed hostname
+     * @param {string} port pre-parsed port
      * @return {Connection} New connection to the specified address
      * @see {@link module:cytube-common/proxy/connection}
      * @private
      */
-    newConnection(address) {
-        const [host, port] = address.split('/');
-        logger.info(`Opening connection to [${host}/${port}]`);
-        const socket = net.connect(port, host);
+    newConnection(address, hostname, port) {
+        logger.info(`Opening connection to [${address}]`);
+        const socket = net.connect(port, hostname);
         const connection = new Connection(socket, address, this.protocol);
         connection.on('close', this.onConnectionClose.bind(this, connection));
         connection.on('error', this.onConnectionError.bind(this, connection));

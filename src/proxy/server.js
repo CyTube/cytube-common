@@ -1,6 +1,7 @@
 import net from 'net';
 import { EventEmitter } from 'events';
 import Connection from './connection';
+import { formatProxyAddress } from '../util/addressutil';
 
 /**
  * Backend server that listens for proxy connections.
@@ -39,7 +40,8 @@ class Server extends EventEmitter {
      * @private
      */
     onConnection(socket) {
-        const endpoint = socket.remoteAddress + '/' + socket.remotePort;
+        const endpoint = formatProxyAddress(socket.remoteAddress,
+                socket.remotePort, socket.secure);
         const connection = new Connection(socket, endpoint, this.protocol);
         this.emit('connection', connection);
     }
