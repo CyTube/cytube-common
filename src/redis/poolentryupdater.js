@@ -20,7 +20,7 @@ class PoolEntryUpdater {
          this.hash = hash;
          this.key = key;
          this.value = value;
-         this.interval = interval;
+         this.interval = interval * 1000;
      }
 
      /**
