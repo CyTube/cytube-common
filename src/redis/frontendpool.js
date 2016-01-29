@@ -2,6 +2,7 @@ import { runLuaScript } from './lualoader';
 import logger from '../logger';
 import { isSecure } from '../util/addressutil';
 import PoolEntryUpdater from './poolentryupdater';
+import path from 'path';
 
 /** @module cytube-common/redis/frontendpool */
 
@@ -12,6 +13,8 @@ export const FRONTEND_POOL = 'frontend-hosts';
  * the listener is using TLS
  */
 export const FRONTEND_POOL_SECURE = 'frontend-hosts-secure';
+/** Path to frontend lookup script */
+const FRONTEND_SCRIPT = path.resolve(__dirname, 'lua', 'frontendpool_random.lua');
 
 /**
  * Interface for publishing and retrieving available frontend
@@ -38,6 +41,7 @@ class FrontendPool {
     getFrontends(channel) {
         return runLuaScript(
                 this.redisClient,
+                FRONTEND_SCRIPT,
                 [
                     2,
                     FRONTEND_POOL_SECURE,

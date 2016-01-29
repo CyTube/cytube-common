@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "build": "babel --source-maps --out-dir lib/ src/",
-    "postinstall": "babel --source-maps --out-dir lib/ src/",
-    "dev": "babel --watch --source-maps --out-dir lib/ src/",
+    "build": "babel -D --source-maps --out-dir lib/ src/",
+    "postinstall": "babel -D --source-maps --out-dir lib/ src/",
+    "dev": "babel -D --watch --source-maps --out-dir lib/ src/",
     "test": "mocha --recursive"
   },
   "author": "Calvin Montgomery",

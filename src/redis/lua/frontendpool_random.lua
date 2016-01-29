@@ -14,7 +14,7 @@ local function getConfigs(pool)
     local entry = response[i+1]
     local decoded = cjson.decode(entry)
     local timestamp = decoded['lastUpdated']
-    if timestamp >= expiration then
+    if timestamp < expiration then
       -- Expired, remove from pool
       redis.call('hdel', pool, uuid)
     else
@@ -27,7 +27,6 @@ end
 
 local secureConfigs = getConfigs(KEYS[1])
 local insecureConfigs = getConfigs(KEYS[2])
-print('secure ' .. #secureConfigs .. ' insecure ' .. #insecureConfigs)
 local combined = {}
 local hashCode = tonumber(ARGV[1])
 if #secureConfigs > 0 then
