@@ -57,7 +57,7 @@ class FrontendPool {
                 return [];
             }
         }).catch(error => {
-            logger.error(`Error retrieving frontend list: ${error}`);
+            logger.error(`Error retrieving frontend list: ${error.stack}`);
             return [];
         });
     }

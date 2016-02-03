@@ -13,17 +13,32 @@ export function loadLuaScript(filename) {
     return CACHE[filename];
 }
 
+function loadAndExecuteScript(redisClient, filename, args) {
+    return redisClient.scriptAsync('load', loadLuaScript(filename))
+            .then(sha => {
+        EVALSHA_CACHE[filename] = sha;
+        logger.debug(`Cached ${filename} as ${sha}`);
+        return runEvalSha(redisClient, filename, args);
+    });
+}
+
+function runEvalSha(redisClient, filename, args) {
+    const evalInput = args.slice();
+    evalInput.unshift(EVALSHA_CACHE[filename])
+    return redisClient.evalshaAsync.apply(redisClient, evalInput);
+}
+
 export function runLuaScript(redisClient, filename, args) {
     if (EVALSHA_CACHE.hasOwnProperty(filename)) {
-        args.unshift(EVALSHA_CACHE[filename]);
-        return redisClient.evalshaAsync.apply(redisClient, args);
-    } else {
-        return redisClient.scriptAsync('load', loadLuaScript(filename))
-                .then(sha => {
-            logger.debug(`Cached ${filename} as ${sha}`);
-            EVALSHA_CACHE[filename] = sha;
-            args.unshift(sha);
-            return redisClient.evalshaAsync.apply(redisClient, args);
+        return runEvalSha(redisClient, filename, args).catch(error => {
+            if (error.code === 'NOSCRIPT') {
+                logger.warn(`Got NOSCRIPT error for ${filename}, reloading script`);
+                return loadAndExecuteScript(redisClient, filename, args);
+            } else {
+                throw error;
+            }
         });
+    } else {
+        return loadAndExecuteScript(redisClient, filename, args);
     }
 }
