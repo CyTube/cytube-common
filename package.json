@@ -1,7 +1,7 @@
 {
   "name": "cytube-common",
   "version": "0.0.1",
-  "description": "",
+  "description": "Common modules for CyTube frontend/backend",
   "scripts": {
     "build": "babel -D --source-maps --out-dir lib/ src/",
     "postinstall": "babel -D --source-maps --out-dir lib/ src/",
