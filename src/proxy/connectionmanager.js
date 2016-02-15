@@ -83,6 +83,7 @@ class ConnectionManager extends EventEmitter {
      */
     onConnectionClose(connection) {
         logger.info(`Connection to [${connection.endpoint}] was closed`);
+        connection.disconnected = true;
         delete this.connections[connection.endpoint];
     }
 

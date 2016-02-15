@@ -85,7 +85,15 @@ class Connection extends EventEmitter {
      * @public
      */
     write(data) {
-        return this.socket.write(this.protocol.serializeEvent(data));
+        if (this.disconnected) {
+            logger.warn(`Write after end for connection to ${this.endpoint}`);
+        } else {
+            try {
+                return this.socket.write(this.protocol.serializeEvent(data));
+            } catch (error) {
+                logger.error(`Write failed (${this.endpoint}): ${error}`);
+            }
+        }
     }
 
     /**
