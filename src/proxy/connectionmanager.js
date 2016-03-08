@@ -3,6 +3,7 @@ import logger from '../logger';
 import Connection from './connection';
 import net from 'net';
 import { parseAddress } from '../util/addressutil';
+import uid2 from 'uid2';
 
 /**
  * Holds {@link Connection} objects and vends them to callers.  Ensures
@@ -69,6 +70,7 @@ class ConnectionManager extends EventEmitter {
         logger.info(`Opening connection to [${address}]`);
         const socket = net.connect(port, hostname);
         const connection = new Connection(socket, address, this.protocol);
+        connection.uid = uid2(10);
         connection.on('close', this.onConnectionClose.bind(this, connection));
         connection.on('error', this.onConnectionError.bind(this, connection));
 
@@ -82,7 +84,7 @@ class ConnectionManager extends EventEmitter {
      * @private
      */
     onConnectionClose(connection) {
-        logger.info(`Connection to [${connection.endpoint}] was closed`);
+        logger.info(`Connection to [${connection.endpoint}] (uid:${connection.uid}) was closed`);
         connection.disconnected = true;
         delete this.connections[connection.endpoint];
     }
@@ -95,7 +97,7 @@ class ConnectionManager extends EventEmitter {
      * @private
      */
     onConnectionError(connection, error) {
-        logger.error(`Error from connection to [${connection.endpoint}]: ` +
+        logger.error(`Error from connection to [${connection.endpoint}] (uid:${connection.uid}): ` +
                 error
         );
     }
