@@ -111,6 +111,16 @@ register(JSONProtocol, 'SocketDisconnectEvent', ['socketID']);
 register(JSONProtocol, 'SocketJoinRoomsEvent', ['socketID', 'roomList']);
 
 /**
+ * Event sent when the backend requests the socket.io socket be removed
+ * to socket.io rooms.
+ *
+ * @function newSocketLeaveRoomsEvent
+ * @param {string} socketID socket.io unique socket ID
+ * @param {Array<string>} roomList list of rooms to leave
+ */
+register(JSONProtocol, 'SocketLeaveRoomsEvent', ['socketID', 'roomList']);
+
+/**
  * Event sent when the backend requests a socket.io socket be forced
  * to disconnect.
  *
