@@ -26,6 +26,33 @@ export function incCounter(counter, amount = 1) {
 }
 
 /**
+ * Start a timer.  Returns a handle to use to end the timer.
+ *
+ * @param {string} timer name
+ * @return {object} timer handle
+ */
+export function startTimer(timer) {
+    return {
+        timer: timer,
+        hrtime: process.hrtime()
+    };
+}
+
+/**
+ * Stop a timer and record the time (as an average)
+ *
+ * @param {object} handle timer handle to Stop
+ */
+export function stopTimer(handle) {
+    if (delegate === null) {
+        logger.error('No metrics reporter configured!');
+        return;
+    }
+    const [seconds, ns] = process.hrtime(handle.hrtime);
+    delegate.addTime(handle.timer, seconds*1e3 + ns/1e6);
+}
+
+/**
  * Add a property to the current metrics period.
  *
  * @param {string} property property name to add

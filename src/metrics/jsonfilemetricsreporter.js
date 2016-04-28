@@ -11,6 +11,7 @@ class JSONFileMetricsReporter {
     constructor(filename) {
         this.writeStream = fs.createWriteStream(filename, { flags: 'a' });
         this.metrics = {};
+        this.timers = {};
     }
 
     /**
@@ -25,6 +26,28 @@ class JSONFileMetricsReporter {
     }
 
     /**
+     * Add a time metric
+     *
+     * @param {string} timer name of the timer
+     * @param {number} ms milliseconds to record
+     */
+    addTime(timer, ms) {
+        if (!this.timers.hasOwnProperty(timer)) {
+            this.timers[timer] = {
+                totalTime: 0,
+                count: 0,
+                p100: 0
+            };
+        }
+
+        this.timers[timer].totalTime += ms;
+        this.timers[timer].count++;
+        if (ms > this.timers[timer].p100) {
+            this.timers[timer].p100 = ms;
+        }
+    }
+
+    /**
      * @see {@link module:cytube-common/metrics/metrics.addProperty}
      */
     addProperty(property, value) {
@@ -32,6 +55,12 @@ class JSONFileMetricsReporter {
     }
 
     report() {
+        for (const timer in this.timers) {
+            this.metrics[timer+':avg'] = this.timers[timer].totalTime / this.timers[timer].count;
+            this.metrics[timer+':count'] = this.timers[timer].count;
+            this.metrics[timer+':p100'] = this.timers[timer].p100;
+        }
+
         const line = JSON.stringify(this.metrics) + '\n';
         try {
             this.writeStream.write(line);
