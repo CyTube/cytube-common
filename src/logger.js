@@ -3,37 +3,75 @@ import path from 'path';
 import winston from 'winston';
 
 const WORKER_ID = cluster.isMaster ? 'master' : `worker-${cluster.worker.id}`;
-var INSTANCE = null;
 
-Object.defineProperty(exports, '__esModule', {
-    value: true
-});
+class DefaultLogger {
+    constructor() {
+        this.delegate = winston;
+    }
 
-Object.defineProperty(exports, 'default', {
-    get() {
-        if (INSTANCE === null) {
-            initializeLogger();
+    initialize(consoleConfigOverride, fileConfigOverride, debug = false) {
+        if (this.delegate !== winston) {
+            this.delegate.error('Logger already initialized!');
+            return;
         }
 
-        return INSTANCE;
+        const consoleConfig = {
+            colorize: true
+        };
+        if (consoleConfigOverride) {
+            for (const key in consoleConfigOverride) {
+                consoleConfig[key] = consoleConfigOverride[key];
+            }
+        }
+
+        const fileConfig = {
+            filename: 'application.log',
+            json: false
+        };
+        if (fileConfigOverride) {
+            for (const key in fileConfigOverride) {
+                fileConfig[key] = fileConfigOverride[key];
+            }
+        }
+
+        this.delegate = new winston.Logger({
+            level: debug ? 'debug' : 'info',
+            transports: [
+                new (winston.transports.Console)(consoleConfig),
+                new (winston.transports.File)(fileConfig)
+            ]
+        });
+
+        if (cluster.isWorker || Object.keys(cluster.workers).length > 0) {
+            this.delegate.filters.push((level, msg, meta) => {
+                return `(${WORKER_ID}) ${msg}`;
+            });
+        }
     }
-});
 
-function initializeLogger() {
-    INSTANCE = new winston.Logger({
-        level: !!process.env.DEBUG ? 'debug' : 'info',
-        transports: [
-            new (winston.transports.Console)({
-                colorize: true
-            }),
-            new (winston.transports.File)({
-                filename: 'application.log',
-                json: false
-            })
-        ]
-    });
+    silly() {
+        this.delegate.silly.apply(this.delegate, arguments);
+    }
 
-    INSTANCE.filters.push((level, msg, meta) => {
-        return `(${WORKER_ID}) ${msg}`;
-    });
+    debug() {
+        this.delegate.debug.apply(this.delegate, arguments);
+    }
+
+    verbose() {
+        this.delegate.verbose.apply(this.delegate, arguments);
+    }
+
+    info() {
+        this.delegate.info.apply(this.delegate, arguments);
+    }
+
+    warn() {
+        this.delegate.warn.apply(this.delegate, arguments);
+    }
+
+    error() {
+        this.delegate.error.apply(this.delegate, arguments);
+    }
 }
+
+module.exports = new DefaultLogger();
