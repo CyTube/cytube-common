@@ -66,6 +66,7 @@ class JSONFileMetricsReporter {
             this.writeStream.write(line);
         } finally {
             this.metrics = {};
+            this.timers = {};
         }
     }
 }
