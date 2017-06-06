@@ -10,6 +10,14 @@ const TIMESTAMP = 'time';
 var delegate = null;
 var reportInterval = null;
 var reportHooks = [];
+let warnedNoReporter = false;
+
+function warnNoReporter() {
+    if (!warnedNoReporter) {
+        warnedNoReporter = true;
+        logger.warn('No metrics reporter configured.  Metrics will not be recorded.');
+    }
+}
 
 /**
  * Increment a metrics counter by the specified amount.
@@ -19,7 +27,7 @@ var reportHooks = [];
  */
 export function incCounter(counter, amount = 1) {
     if (delegate === null) {
-        logger.error('No metrics reporter configured!');
+        warnNoReporter();
     } else {
         delegate.incCounter(counter, amount);
     }
@@ -45,7 +53,7 @@ export function startTimer(timer) {
  */
 export function stopTimer(handle) {
     if (delegate === null) {
-        logger.error('No metrics reporter configured!');
+        warnNoReporter();
         return;
     }
     const [seconds, ns] = process.hrtime(handle.hrtime);
@@ -60,7 +68,7 @@ export function stopTimer(handle) {
  */
 export function addProperty(property, value) {
     if (delegate === null) {
-        logger.error('No metrics reporter configured!');
+        warnNoReporter();
     } else {
         delegate.addProperty(property, value);
     }
